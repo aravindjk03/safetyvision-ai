@@ -241,8 +241,12 @@ Both services share named volumes for the SQLite audit database, evidence images
 Point the platform at the `Dockerfile`. The container serves the dashboard on `$PORT` (default `8501`). To run the API instead, override the start command with
 `python -m uvicorn app.api:app --host 0.0.0.0 --port $PORT`.
 
-### Streamlit Community Cloud
-Select `app/main.py` as the entry point. `packages.txt` installs the OpenCV system libraries and `.streamlit/config.toml` provides the theme.
+### Streamlit Community Cloud (free, recommended for a public demo)
+1. Open the one-click deploy link: <https://share.streamlit.io/deploy?repository=aravindjk03/safetyvision-ai&branch=main&mainModule=app/main.py>
+2. Sign in with GitHub and authorize Streamlit.
+3. Under **Advanced settings**, choose Python **3.11**, then click **Deploy**.
+
+The first build takes about 5 to 10 minutes. `requirements.txt` pulls CPU-only PyTorch, `packages.txt` installs the OpenCV system libraries, and `.streamlit/config.toml` provides the theme. You get a public `https://<name>.streamlit.app` URL.
 
 > [!NOTE]
 > Free hosting tiers have no persistent disk: the inspection history, evidence and reports reset on every restart. Mount a volume (Docker/Render) for a durable audit trail. The **Live Camera** page uses the browser's camera, so it requires the dashboard to be served over HTTPS (or `localhost`).

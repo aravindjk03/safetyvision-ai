@@ -1,6 +1,9 @@
 # SafetyVision AI Dependencies
 # Python 3.11+ compatible
 
+# CPU-only PyTorch wheels (much smaller than the default CUDA build; used by Streamlit Cloud / Docker)
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # Core Computer Vision & Deep Learning
 ultralytics>=8.3.0
 torch>=2.2.0
