@@ -64,8 +64,9 @@ TAMPER-EVIDENT EVIDENCE IMAGE + SQLITE AUDIT RECORD + REPORTLAB PDF REPORT
 
 ### Windows (PowerShell)
 ```powershell
-# 1. Navigate to repository root
-cd C:\Users\Admin\.gemini\antigravity\scratch\safetyvision-ai
+# 1. Clone and enter the repository
+git clone https://github.com/aravindjk03/safetyvision-ai.git
+cd safetyvision-ai
 
 # 2. Create and activate Python virtual environment
 python -m venv venv
@@ -75,32 +76,34 @@ python -m venv venv
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-# 4. Generate sample acceptance dataset
-python scripts/generate_sample_data.py
-
-# 5. Run automated test suite
+# 4. Run automated test suite
 pytest -v
 
-# 6. Launch Streamlit Industrial Dashboard
+# 5. Launch Streamlit Industrial Dashboard (or double-click run.bat)
 streamlit run app/main.py
 ```
+
+The repository already ships the sample dataset and trained weights. Re-generate the synthetic dataset only if you want fresh samples: `python scripts/generate_sample_data.py`.
 
 ### Linux (Ubuntu / Debian)
 ```bash
 # 1. Install system multimedia libraries
-sudo apt update && sudo apt install -y python3-pip python3-venv libgl1-mesa-glx libglib2.0-0
+sudo apt update && sudo apt install -y python3-pip python3-venv libgl1 libglib2.0-0
 
 # 2. Setup virtual environment
 python3 -m venv venv
 source venv/bin/activate
 
-# 3. Install dependencies
+# 3. Install dependencies (CPU-only PyTorch first keeps the install small)
 pip install --upgrade pip
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 
-# 4. Run tests & start dashboard
+# 4. Run tests & start dashboard / API
 pytest -v
-streamlit run app/main.py --server.port 8501 --server.address 0.0.0.0
+./run.sh            # dashboard → http://localhost:8501
+./run.sh api        # REST API  → http://localhost:8080/docs
+./run.sh all        # both
 ```
 
 ---
@@ -112,7 +115,7 @@ streamlit run app/main.py --server.port 8501 --server.address 0.0.0.0
    - Prominently watermarked: **`"DEMO MODEL — NOT TRAINED FOR INDUSTRIAL SAFETY INSPECTION"`**.
 2. **Custom Model Mode**:
    - Once trained weights exist at `models/safetyvision_yolo26n.pt`, the system automatically transitions:
-   - Displays: **`MODEL: SafetyVision-YOLO26 | VERSION: 0.1.0 | MODE: CUSTOM SAFETY MODEL`**.
+   - Displays: **`MODEL: SafetyVision-YOLO26 | VERSION: 2.1.0 | MODE: CUSTOM SAFETY MODEL`**.
 
 ---
 
@@ -123,14 +126,17 @@ streamlit run app/main.py --server.port 8501 --server.address 0.0.0.0
 python scripts/validate_dataset.py
 
 # 2. Train custom YOLO model (auto-detects CUDA GPU or gracefully falls back to CPU)
-python scripts/train.py --epochs 30 --batch 16 --imgsz 640
+python scripts/train.py --epochs 30 --batch 16 --imgsz 320
 
 # 3. Run model evaluation audit (generates reports/model_evaluation.json & .html)
-python scripts/evaluate.py --split test
+python scripts/evaluate.py --split test --imgsz 320
 
 # 4. Run model latency and throughput benchmark
 python scripts/benchmark_models.py
 ```
+
+**Current model (v2.1.0, see `models/model_registry.yaml`):** held-out test split mAP50 0.995, mAP50-95 0.994, precision 0.997, recall 1.000, about 23 ms per image on CPU at 320 px.
+These numbers are saturated because the dataset is synthetic (rendered by `scripts/generate_sample_data.py`), and train and test come from the same generator. They do **not** predict performance on real photographs. Real deployment requires a labelled dataset of real equipment images (see `docs/DATA_COLLECTION_GUIDE.md`).
 
 ---
 
@@ -202,9 +208,9 @@ safetyvision-ai/
 
 Start the headless FastAPI microservice:
 ```bash
-python -m uvicorn app.api:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.api:app --host 0.0.0.0 --port 8080
 ```
-- Interactive Swagger UI: `http://localhost:8000/docs`
+- Interactive Swagger UI: `http://localhost:8080/docs`
 - Health check: `GET /health`
 - Run image inspection: `POST /inspect/image`
 - Query inspection record: `GET /inspection/{id}`
@@ -214,7 +220,36 @@ python -m uvicorn app.api:app --host 0.0.0.0 --port 8000
 
 ---
 
-## 8. Licensing
+Example request:
+```bash
+curl -F "file=@dataset/images/test/acceptance_01_pass_full.jpg;type=image/jpeg" \
+     "http://localhost:8080/inspect/image?operator=Line-3"
+```
+
+---
+
+## 8. Running Live (Deployment)
+
+### Docker (dashboard + API)
+```bash
+docker compose up --build
+# Dashboard: http://localhost:8501   API: http://localhost:8080/docs
+```
+Both services share named volumes for the SQLite audit database, evidence images and PDF reports. The image uses CPU-only PyTorch.
+
+### Single container on a hosting platform (Render, Railway, Cloud Run, Hugging Face Docker Spaces)
+Point the platform at the `Dockerfile`. The container serves the dashboard on `$PORT` (default `8501`). To run the API instead, override the start command with
+`python -m uvicorn app.api:app --host 0.0.0.0 --port $PORT`.
+
+### Streamlit Community Cloud
+Select `app/main.py` as the entry point. `packages.txt` installs the OpenCV system libraries and `.streamlit/config.toml` provides the theme.
+
+> [!NOTE]
+> Free hosting tiers have no persistent disk: the inspection history, evidence and reports reset on every restart. Mount a volume (Docker/Render) for a durable audit trail. The **Live Camera** page uses the browser's camera, so it requires the dashboard to be served over HTTPS (or `localhost`).
+
+---
+
+## 9. Licensing
 
 SafetyVision AI prototype integrates Ultralytics YOLO.
 - **Open Source Evaluation**: Licensed under GNU AGPL-3.0.

@@ -41,3 +41,6 @@ Thumbs.db
 evidence/*
 !evidence/.gitkeep
 !evidence/README.md
+
+# Runtime inspection artifacts
+reports/INS-*.pdf

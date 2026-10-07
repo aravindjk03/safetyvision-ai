@@ -1,38 +1,38 @@
 {
-  "timestamp": "2026-10-07T07:54:06.579663",
-  "model_path": "C:\\Users\\Admin\\.gemini\\antigravity\\scratch\\safetyvision-ai\\models\\safetyvision_yolo26n.pt",
-  "split": "val",
+  "timestamp": "2026-10-07T03:33:57.769121",
+  "model_path": "/home/user/safetyvision-ai/models/safetyvision_yolo26n.pt",
+  "split": "test",
   "global_metrics": {
     "mAP50": 0.995,
-    "mAP50_95": 0.9947,
-    "mean_precision": 0.9978,
+    "mAP50_95": 0.9941,
+    "mean_precision": 0.9966,
     "mean_recall": 1.0
   },
   "per_class_metrics": {
     "grinder": {
       "class_id": 0,
-      "precision": 0.999,
+      "precision": 0.9987,
       "recall": 1.0,
       "mAP50": 0.995,
       "mAP50_95": 0.995
     },
     "guard": {
       "class_id": 1,
-      "precision": 0.9986,
+      "precision": 0.9981,
       "recall": 1.0,
       "mAP50": 0.995,
       "mAP50_95": 0.995
     },
     "handle": {
       "class_id": 2,
-      "precision": 0.9989,
+      "precision": 0.9987,
       "recall": 1.0,
       "mAP50": 0.995,
       "mAP50_95": 0.995
     },
     "cable": {
       "class_id": 3,
-      "precision": 0.9991,
+      "precision": 0.9987,
       "recall": 1.0,
       "mAP50": 0.995,
       "mAP50_95": 0.995
@@ -42,35 +42,35 @@
       "precision": 0.9996,
       "recall": 1.0,
       "mAP50": 0.995,
-      "mAP50_95": 0.9926
+      "mAP50_95": 0.9933
     },
     "damaged_guard": {
       "class_id": 5,
-      "precision": 0.996,
+      "precision": 0.994,
       "recall": 1.0,
       "mAP50": 0.995,
       "mAP50_95": 0.995
     },
     "damaged_cable": {
       "class_id": 6,
-      "precision": 0.9941,
+      "precision": 0.9894,
       "recall": 1.0,
       "mAP50": 0.995,
       "mAP50_95": 0.995
     },
     "person": {
       "class_id": 7,
-      "precision": 0.9973,
+      "precision": 0.9958,
       "recall": 1.0,
       "mAP50": 0.995,
-      "mAP50_95": 0.995
+      "mAP50_95": 0.9892
     }
   },
   "safety_critical_audit": {
     "guard": {
       "metric_summary": {
         "class_id": 1,
-        "precision": 0.9986,
+        "precision": 0.9981,
         "recall": 1.0,
         "mAP50": 0.995,
         "mAP50_95": 0.995
@@ -80,7 +80,7 @@
     "damaged_guard": {
       "metric_summary": {
         "class_id": 5,
-        "precision": 0.996,
+        "precision": 0.994,
         "recall": 1.0,
         "mAP50": 0.995,
         "mAP50_95": 0.995
@@ -90,7 +90,7 @@
     "damaged_cable": {
       "metric_summary": {
         "class_id": 6,
-        "precision": 0.9941,
+        "precision": 0.9894,
         "recall": 1.0,
         "mAP50": 0.995,
         "mAP50_95": 0.995

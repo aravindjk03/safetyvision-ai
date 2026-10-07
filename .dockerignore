@@ -1,0 +1,16 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+models/training_runs
+runs
+logs
+evidence/*
+!evidence/.gitkeep
+reports/INS-*.pdf
+dataset/images/train
+dataset/images/val
+dataset/labels
+*.bat

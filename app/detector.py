@@ -57,7 +57,7 @@ class DetectionEngine:
             target_path = str(self.custom_weights_path)
             self.is_custom_model = True
             self.model_name = self.config.model_config.get("name", "SafetyVision-YOLO26")
-            self.model_version = self.config.system_config.get("version", "0.1.0")
+            self.model_version = self._registry_version(self.model_name)
             self.logger.info(f"Loaded CUSTOM SAFETY MODEL: {target_path} (v{self.model_version})")
         else:
             target_path = self.demo_weights_path
@@ -75,6 +75,17 @@ class DetectionEngine:
         except Exception as e:
             self.logger.error(f"Failed to initialize YOLO model from {target_path}: {e}")
             raise RuntimeError(f"Could not load YOLO model: {e}") from e
+
+    def _registry_version(self, model_name: str) -> str:
+        """Resolves the model version from models/model_registry.yaml, falling back to the system version."""
+        registry = self.config._load_yaml(self.config.root_dir / "models" / "model_registry.yaml")
+        active = registry.get("registry", {})
+        if active.get("active_model") == model_name and active.get("active_version"):
+            return str(active["active_version"])
+        for entry in registry.get("models", []) or []:
+            if entry.get("model_name") == model_name and entry.get("model_version"):
+                return str(entry["model_version"])
+        return str(self.config.system_info.get("version", "0.1.0"))
 
     def detect(
         self,

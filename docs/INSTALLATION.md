@@ -16,9 +16,10 @@ This guide provides exact deployment commands for Windows and Linux platforms.
 
 ## 1. Windows Installation (PowerShell / Command Prompt)
 
-### Step 1: Open Terminal & Navigate to Project
+### Step 1: Clone & Navigate to Project
 ```powershell
-cd C:\Users\Admin\.gemini\antigravity\scratch\safetyvision-ai
+git clone https://github.com/aravindjk03/safetyvision-ai.git
+cd safetyvision-ai
 ```
 
 ### Step 2: Create Python Virtual Environment

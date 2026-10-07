@@ -3,12 +3,50 @@
 
 registry:
   active_model: "SafetyVision-YOLO26"
-  active_version: "0.1.0"
-  
+  active_version: "2.1.0"
+
 models:
   - model_name: "SafetyVision-YOLO26"
-    model_version: "2.0.0"
+    model_version: "2.1.0"
     status: "production_candidate"
+    architecture: "YOLO11n"
+    framework: "Ultralytics YOLO 8.4"
+    weights_path: "models/safetyvision_yolo26n.pt"
+    onnx_path: "models/safetyvision_yolo26n.onnx"
+    training_date: "2026-10-07"
+    dataset_version: "v2.0.0-synthetic-805-samples (600 train / 120 val / 85 test)"
+    classes:
+      - "grinder"
+      - "guard"
+      - "handle"
+      - "cable"
+      - "switch"
+      - "damaged_guard"
+      - "damaged_cable"
+      - "person"
+    metrics:
+      # Held-out test split (85 images, 411 instances), imgsz 320
+      mAP50: 0.995
+      mAP50_95: 0.994
+      precision: 0.997
+      mean_recall: 1.000
+      guard_recall: 1.000
+      damaged_guard_recall: 1.000
+      damaged_cable_recall: 1.000
+      inference_latency_ms: 22.7  # CPU, 4 vCPU, imgsz 320, end-to-end predict()
+    training_parameters:
+      base_weights: "yolo11n.pt"
+      epochs: 30
+      imgsz: 320
+      batch_size: 16
+      optimizer: "auto (AdamW)"
+      device: "cpu"
+      training_time_hours: 0.24
+    notes: "Retrained from yolo11n.pt on the synthetic OpenCV-rendered dataset. Metrics are saturated because train and test come from the same synthetic generator; they do NOT indicate accuracy on real photographs. Collect and label real images (docs/DATA_COLLECTION_GUIDE.md) before relying on this model."
+
+  - model_name: "SafetyVision-YOLO26"
+    model_version: "2.0.0"
+    status: "superseded"
     architecture: "YOLO26n"
     framework: "Ultralytics YOLO (YOLO11n fused)"
     weights_path: "models/safetyvision_yolo26n.pt"
