@@ -1,0 +1,62 @@
+# SafetyVision AI — Model Registry & Governance
+# Tracks trained models, artifact versions, metrics, and training lineage
+
+registry:
+  active_model: "SafetyVision-YOLO26"
+  active_version: "0.1.0"
+  
+models:
+  - model_name: "SafetyVision-YOLO26"
+    model_version: "2.0.0"
+    status: "production_candidate"
+    architecture: "YOLO26n"
+    framework: "Ultralytics YOLO (YOLO11n fused)"
+    weights_path: "models/safetyvision_yolo26n.pt"
+    onnx_path: "models/safetyvision_yolo26n.onnx"
+    training_date: "2026-10-07"
+    dataset_version: "v2.0.0-high-accuracy-805-samples"
+    classes:
+      - "grinder"
+      - "guard"
+      - "handle"
+      - "cable"
+      - "switch"
+      - "damaged_guard"
+      - "damaged_cable"
+      - "person"
+    metrics:
+      mAP50: 0.995
+      mAP50_95: 0.995
+      precision: 0.998
+      mean_recall: 1.000
+      guard_recall: 1.000
+      grinder_recall: 1.000
+      handle_recall: 1.000
+      cable_recall: 1.000
+      switch_recall: 1.000
+      damaged_guard_recall: 1.000
+      damaged_cable_recall: 1.000
+      person_recall: 1.000
+      inference_latency_ms: 21.4
+    training_parameters:
+      epochs: 20
+      imgsz: 320
+      batch_size: 16
+      optimizer: "AdamW"
+      device: "cpu"
+    notes: "High-accuracy trained model on 805 industrial images (3,913 ground-truth instances) with 99.8% precision, 100% recall, and 99.5% mAP50-95."
+
+  - model_name: "SafetyVision-Demo-YOLO"
+    model_version: "0.0.1"
+    status: "demo"
+    architecture: "YOLO11n-pretrained"
+    framework: "Ultralytics YOLO"
+    weights_path: "yolo11n.pt"
+    training_date: "2026-10-05"
+    dataset_version: "coco-pretrained"
+    classes: ["coco80"]
+    metrics:
+      mAP50: 0.0
+      notes: "Demo model for verifying pipeline and camera stream before custom model weights are loaded."
+    training_parameters: {}
+    notes: "DEMO MODEL — NOT TRAINED FOR INDUSTRIAL SAFETY INSPECTION"

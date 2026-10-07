@@ -1,0 +1,33 @@
+# SafetyVision AI Dependencies
+# Python 3.11+ compatible
+
+# Core Computer Vision & Deep Learning
+ultralytics>=8.3.0
+torch>=2.2.0
+torchvision>=0.17.0
+opencv-python>=4.9.0.80
+pillow>=10.2.0
+numpy>=1.26.0
+pandas>=2.2.0
+
+# User Interface & Visualization
+streamlit>=1.35.0
+
+# Document & Report Generation
+reportlab>=4.0.0
+
+# REST API & Microservice
+fastapi>=0.110.0
+uvicorn>=0.28.0
+python-multipart>=0.0.9
+pydantic>=2.6.0
+
+# Configuration & Data Validation
+pyyaml>=6.0.1
+
+# Deployment & Export
+onnx>=1.16.0
+
+# Testing & Quality Assurance
+pytest>=8.0.0
+pytest-asyncio>=0.23.0

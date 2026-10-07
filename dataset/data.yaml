@@ -1,0 +1,17 @@
+# SafetyVision AI — YOLO Dataset Configuration
+
+path: dataset
+train: images/train
+val: images/val
+test: images/test
+
+# Classes mapping
+names:
+  0: grinder
+  1: guard
+  2: handle
+  3: cable
+  4: switch
+  5: damaged_guard
+  6: damaged_cable
+  7: person

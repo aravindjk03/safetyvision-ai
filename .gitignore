@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing and Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Training intermediate runs & caches
+models/training_runs/
+runs/
+dataset/labels/*.cache
+dataset/labels/*/*.cache
+
+# Logs & temp files
+logs/*.log
+*.tmp
+*.db-shm
+*.db-wal
+.DS_Store
+Thumbs.db
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Runtime Evidence & Reports (keep directory structure)
+evidence/*
+!evidence/.gitkeep
+!evidence/README.md

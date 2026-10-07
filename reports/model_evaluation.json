@@ -1,0 +1,102 @@
+{
+  "timestamp": "2026-10-07T07:54:06.579663",
+  "model_path": "C:\\Users\\Admin\\.gemini\\antigravity\\scratch\\safetyvision-ai\\models\\safetyvision_yolo26n.pt",
+  "split": "val",
+  "global_metrics": {
+    "mAP50": 0.995,
+    "mAP50_95": 0.9947,
+    "mean_precision": 0.9978,
+    "mean_recall": 1.0
+  },
+  "per_class_metrics": {
+    "grinder": {
+      "class_id": 0,
+      "precision": 0.999,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50_95": 0.995
+    },
+    "guard": {
+      "class_id": 1,
+      "precision": 0.9986,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50_95": 0.995
+    },
+    "handle": {
+      "class_id": 2,
+      "precision": 0.9989,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50_95": 0.995
+    },
+    "cable": {
+      "class_id": 3,
+      "precision": 0.9991,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50_95": 0.995
+    },
+    "switch": {
+      "class_id": 4,
+      "precision": 0.9996,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50_95": 0.9926
+    },
+    "damaged_guard": {
+      "class_id": 5,
+      "precision": 0.996,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50_95": 0.995
+    },
+    "damaged_cable": {
+      "class_id": 6,
+      "precision": 0.9941,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50_95": 0.995
+    },
+    "person": {
+      "class_id": 7,
+      "precision": 0.9973,
+      "recall": 1.0,
+      "mAP50": 0.995,
+      "mAP50_95": 0.995
+    }
+  },
+  "safety_critical_audit": {
+    "guard": {
+      "metric_summary": {
+        "class_id": 1,
+        "precision": 0.9986,
+        "recall": 1.0,
+        "mAP50": 0.995,
+        "mAP50_95": 0.995
+      },
+      "recall_assessment": "SATISFACTORY (>=0.90)"
+    },
+    "damaged_guard": {
+      "metric_summary": {
+        "class_id": 5,
+        "precision": 0.996,
+        "recall": 1.0,
+        "mAP50": 0.995,
+        "mAP50_95": 0.995
+      },
+      "recall_assessment": "SATISFACTORY (>=0.90)"
+    },
+    "damaged_cable": {
+      "metric_summary": {
+        "class_id": 6,
+        "precision": 0.9941,
+        "recall": 1.0,
+        "mAP50": 0.995,
+        "mAP50_95": 0.995
+      },
+      "recall_assessment": "SATISFACTORY (>=0.90)"
+    }
+  },
+  "operational_suitability_disclaimer": "IMPORTANT NOTICE ON PRODUCTION READINESS: High mAP metrics alone do NOT certify production readiness. Suitability for industrial safety inspection requires extensive validation against actual plant conditions, including lens contamination, severe vibration, motion blur, varied lighting, reflective tooling surfaces, and out-of-distribution equipment variations."
+}

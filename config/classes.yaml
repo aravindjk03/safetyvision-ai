@@ -1,0 +1,77 @@
+# SafetyVision AI — Class Definitions and Visual Attributes
+# Initial category: Industrial Angle Grinder and safety components
+
+classes:
+  0:
+    name: "grinder"
+    display_name: "Angle Grinder Body"
+    category: "equipment"
+    color_bgr: [230, 115, 0]      # Steel blue
+    color_rgb: [0, 115, 230]
+    description: "Main body and motorized chassis of an industrial angle grinder"
+    is_equipment: true
+
+  1:
+    name: "guard"
+    display_name: "Protective Wheel Guard"
+    category: "component"
+    color_bgr: [0, 180, 0]        # Forest green
+    color_rgb: [0, 180, 0]
+    description: "Metal disc safety guard deflecting sparks and debris"
+    is_equipment: false
+
+  2:
+    name: "handle"
+    display_name: "Auxiliary Side Handle"
+    category: "component"
+    color_bgr: [200, 160, 0]      # Teal/Cyan
+    color_rgb: [0, 160, 200]
+    description: "Side grip handle ensuring two-handed operator control"
+    is_equipment: false
+
+  3:
+    name: "cable"
+    display_name: "Power Cable & Strain Relief"
+    category: "component"
+    color_bgr: [180, 0, 180]      # Purple
+    color_rgb: [180, 0, 180]
+    description: "Heavy-duty power cord and anti-kink boot"
+    is_equipment: false
+
+  4:
+    name: "switch"
+    display_name: "Safety Trigger / Switch"
+    category: "component"
+    color_bgr: [220, 200, 0]      # Cyan
+    color_rgb: [0, 200, 220]
+    description: "Power activation switch and dead-man safety lockout"
+    is_equipment: false
+
+  5:
+    name: "damaged_guard"
+    display_name: "Damaged / Cracked Guard"
+    category: "damage"
+    color_bgr: [0, 0, 220]        # Bright red
+    color_rgb: [220, 0, 0]
+    description: "Visible fracture, severe deformation, or mounting failure on guard"
+    is_equipment: false
+    is_violation: true
+
+  6:
+    name: "damaged_cable"
+    display_name: "Frayed / Exposed Cable"
+    category: "damage"
+    color_bgr: [0, 0, 255]        # Pure red
+    color_rgb: [255, 0, 0]
+    description: "Exposed copper conductors, severe cuts, or damaged insulation"
+    is_equipment: false
+    is_violation: true
+
+  7:
+    name: "person"
+    display_name: "Operator / Person"
+    category: "person"
+    color_bgr: [128, 128, 128]    # Neutral gray
+    color_rgb: [128, 128, 128]
+    description: "Human operator or bystander in visual frame"
+    is_equipment: false

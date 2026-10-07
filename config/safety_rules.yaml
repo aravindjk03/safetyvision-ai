@@ -1,0 +1,67 @@
+# SafetyVision AI — Industrial Safety Rules Specification
+# Deterministic rule evaluation for industrial equipment compliance
+
+equipment:
+  angle_grinder:
+    display_name: "Industrial Angle Grinder"
+    equipment_class: "grinder"
+    category: "power_tools"
+    standard_reference: "OSHA 1910.243 / ANSI B7.1"
+    
+    # Components that MUST be detected and spatially attached
+    mandatory_components:
+      - guard
+      - handle
+      - cable
+      - switch
+
+    # Components whose absence immediately fails inspection
+    critical_components:
+      - guard
+
+    # Severity assigned if component is missing
+    component_severities:
+      guard: "CRITICAL"
+      handle: "HIGH"
+      cable: "HIGH"
+      switch: "MEDIUM"
+
+    # Actionable descriptions for missing components
+    component_descriptions:
+      guard: "Abrasive wheel guard is missing. Operating without guard risks catastrophic projectile injury."
+      handle: "Auxiliary side handle is missing. Two-handed operator stabilization is compromised."
+      cable: "Power cord / strain relief is missing or obscured."
+      switch: "Operating switch / dead-man throttle is missing or obscured."
+
+    # Direct damage violations
+    damage_violations:
+      damaged_guard:
+        severity: "CRITICAL"
+        reason: "Protective guard exhibits visible deformation, fracture, or mounting compromise."
+        recommended_action: "Tag out tool immediately. Replace guard with OEM certified component before use."
+      damaged_cable:
+        severity: "CRITICAL"
+        reason: "Power cable exhibits visible insulation tear, fraying, or exposed conductors."
+        recommended_action: "De-energize immediately. Lockout tool and route to certified electrician."
+
+    # Spatial constraints for component association with equipment
+    spatial:
+      # Max distance between component center and grinder center (relative to grinder bbox diagonal)
+      max_center_distance_factor: 1.25
+      # Expansion factor around grinder bbox to search for attached components
+      expansion_box_factor: 1.40
+      # Minimum overlap or containment ratio
+      min_containment_overlap: 0.01
+
+    # Confidence thresholds
+    confidence:
+      high_threshold: 0.85      # >= 0.85: Confident detection
+      medium_threshold: 0.60    # 0.60 to 0.85: Ambiguous -> REVIEW
+      low_cutoff: 0.25          # < 0.25: Disregarded as noise
+
+    # Evaluation policies
+    policies:
+      multiple_equipment_policy: "REVIEW"   # If > 1 grinder in scene, flag for operator review
+      no_equipment_policy: "REVIEW"         # If 0 grinder in scene, flag as review
+      missing_mandatory_policy: "FAIL"      # If mandatory component missing, FAIL
+      low_confidence_policy: "REVIEW"       # If mandatory component confidence between medium and high, REVIEW

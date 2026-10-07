@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-10-06T18:09:10.431527",
+  "device": "cpu",
+  "benchmarks": [
+    {
+      "model_name": "yolo11n.pt",
+      "parameters_m": 2.62,
+      "size_mb": 5.35,
+      "avg_latency_ms": 220.51,
+      "std_latency_ms": 104.42,
+      "p95_latency_ms": 440.55,
+      "throughput_fps": 4.5
+    },
+    {
+      "model_name": "yolo11s.pt",
+      "parameters_m": 9.46,
+      "size_mb": 18.42,
+      "avg_latency_ms": 725.97,
+      "std_latency_ms": 252.34,
+      "p95_latency_ms": 1103.55,
+      "throughput_fps": 1.4
+    }
+  ]
+}

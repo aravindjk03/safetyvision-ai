@@ -1,0 +1,67 @@
+# SafetyVision AI — System Configuration
+
+system:
+  app_name: "SafetyVision AI"
+  app_subtitle: "Industrial Visual Safety Inspection Platform"
+  version: "0.1.0"
+  environment: "development"
+  debug: false
+
+model:
+  name: "SafetyVision-YOLO26"
+  architecture: "yolo26n"
+  # Path to custom trained model weights
+  custom_weights_path: "models/safetyvision_yolo26n.pt"
+  # Fallback model for demo / uninitialized mode
+  demo_weights_path: "yolo11n.pt"
+  # Device selection: 'auto', 'cuda', 'cpu'
+  device: "auto"
+  imgsz: 320
+  half_precision: false
+  onnx_export_path: "models/safetyvision_yolo26n.onnx"
+
+confidence:
+  high: 0.85
+  medium: 0.60
+  low_cutoff: 0.25
+
+storage:
+  database_path: "data/safetyvision.db"
+  evidence_dir: "evidence"
+  reports_dir: "reports"
+  logs_dir: "logs"
+
+evidence:
+  image_format: "jpg"
+  quality: 95
+  include_watermark: true
+  draw_status_banner: true
+  draw_labels: true
+  font_scale: 0.55
+  box_thickness: 2
+
+camera:
+  device_index: 0
+  width: 1280
+  height: 720
+  fps: 30
+  snapshot_timeout_seconds: 5
+
+conveyor:
+  roi_enabled: true
+  roi_coordinates: [0.15, 0.15, 0.85, 0.85]  # Normalized [x1, y1, x2, y2]
+  stability_frame_threshold: 5
+  center_tolerance: 0.10
+
+api:
+  host: "0.0.0.0"
+  port: 8080
+  title: "SafetyVision AI Inspection API"
+  version: "0.1.0"
+
+logging:
+  level: "INFO"
+  log_to_file: true
+  log_filename: "logs/safetyvision.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
