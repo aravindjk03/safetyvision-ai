@@ -3,6 +3,8 @@ SafetyVision AI — Industrial Visual Safety Inspection Dashboard
 Built with Streamlit. Professional, auditable, high-contrast industrial interface.
 """
 
+import base64
+from functools import lru_cache
 from html import escape
 from pathlib import Path
 import sys
@@ -59,6 +61,19 @@ st.markdown("""
         color: white;
         margin-bottom: 18px;
         box-shadow: 0 6px 18px -8px rgba(13, 35, 58, 0.55);
+    }
+    .main-header { display: flex; align-items: center; gap: 20px; }
+    .main-header .header-text { flex: 1; min-width: 0; }
+    .main-header .brand-logo {
+        flex: 0 0 auto; background: #FFFFFF; border-radius: 10px; padding: 6px;
+        display: flex; align-items: center; justify-content: center;
+        height: 76px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+    .main-header .brand-logo img { height: 64px; width: auto; display: block; }
+    @media (max-width: 640px) {
+        .main-header { gap: 10px; }
+        .main-header .brand-logo { height: 52px; padding: 4px; }
+        .main-header .brand-logo img { height: 44px; }
     }
     .main-header .eyebrow {
         font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase;
@@ -153,13 +168,31 @@ engine, detector, db = get_inspection_pipeline()
 # ==============================================================================
 # UI HELPERS
 # ==============================================================================
+@lru_cache(maxsize=None)
+def logo_data_uri(filename: str) -> str:
+    """Returns a bundled logo from assets/ as a base64 data URI (empty string if missing)."""
+    path = ROOT_DIR / "assets" / filename
+    if not path.is_file():
+        return ""
+    return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("ascii")
+
+
+def brand_logo(filename: str, alt: str) -> str:
+    uri = logo_data_uri(filename)
+    return f'<div class="brand-logo"><img src="{uri}" alt="{escape(alt)}"/></div>' if uri else ""
+
+
 def page_header(eyebrow: str, title: str, subtitle: str) -> None:
     st.markdown(
         f"""
         <div class="main-header">
-            <div class="eyebrow">{escape(eyebrow)}</div>
-            <h1>{escape(title)}</h1>
-            <p class="sub">{escape(subtitle)}</p>
+            {brand_logo("iinvty_logo.png", "IINVTY")}
+            <div class="header-text">
+                <div class="eyebrow">{escape(eyebrow)}</div>
+                <h1>{escape(title)}</h1>
+                <p class="sub">{escape(subtitle)}</p>
+            </div>
+            {brand_logo("sarvam_safety_logo.png", "Sarvam Safety")}
         </div>
         """,
         unsafe_allow_html=True,
