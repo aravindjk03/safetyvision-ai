@@ -115,7 +115,7 @@ pytest -v
    - Prominently watermarked: **`"DEMO MODEL — NOT TRAINED FOR INDUSTRIAL SAFETY INSPECTION"`**.
 2. **Custom Model Mode**:
    - Once trained weights exist at `models/safetyvision_yolo26n.pt`, the system automatically transitions:
-   - Displays: **`MODEL: SafetyVision-YOLO26 | VERSION: 2.1.0 | MODE: CUSTOM SAFETY MODEL`**.
+   - Displays: **`MODEL: SafetyVision-YOLO26 | VERSION: 3.0.0 | MODE: CUSTOM SAFETY MODEL`**.
 
 ---
 
@@ -126,17 +126,27 @@ pytest -v
 python scripts/validate_dataset.py
 
 # 2. Train custom YOLO model (auto-detects CUDA GPU or gracefully falls back to CPU)
-python scripts/train.py --epochs 30 --batch 16 --imgsz 320
+python scripts/train.py --epochs 35 --batch 16 --imgsz 640
 
 # 3. Run model evaluation audit (generates reports/model_evaluation.json & .html)
-python scripts/evaluate.py --split test --imgsz 320
+python scripts/evaluate.py --split test --imgsz 640
 
 # 4. Run model latency and throughput benchmark
 python scripts/benchmark_models.py
 ```
 
-**Current model (v2.1.0, see `models/model_registry.yaml`):** held-out test split mAP50 0.995, mAP50-95 0.994, precision 0.997, recall 1.000, about 23 ms per image on CPU at 320 px.
-These numbers are saturated because the dataset is synthetic (rendered by `scripts/generate_sample_data.py`), and train and test come from the same generator. They do **not** predict performance on real photographs. Real deployment requires a labelled dataset of real equipment images (see `docs/DATA_COLLECTION_GUIDE.md`).
+**Current model (v3.0.0, see `models/model_registry.yaml`)** was trained on 63 labelled real workshop photos of angle grinders and power drills, plus 150 synthetic images. It was then tested on 16 real photos it had never seen:
+
+| Measure (16 held-out real photos) | v2.1.0 (synthetic only) | v3.0.0 |
+|---|---|---|
+| Tool correctly identified (grinder / drill) | 1 of 16 | **16 of 16** |
+| Detection mAP50 (all classes) | n/a | 0.725 |
+| Grinder / drill mAP50 | n/a | 0.986 / 0.995 |
+| Recall: guard / handle / cable / switch | n/a | 0.67 / 0.76 / 0.37 / 0.60 |
+
+Tool identification on real photos is now reliable. Small parts, especially the power cord and switch, are still often missed, so a photo can FAIL for a part that is actually present. Adding more labelled real photos is the way to improve this; see `docs/DATA_COLLECTION_GUIDE.md`.
+
+The app chooses the safety rules automatically from the detected tool. **Angle grinders** need the wheel guard, side handle, cable and switch. **Power drills** need the cable. A damaged guard or cable is always a critical FAIL.
 
 ---
 

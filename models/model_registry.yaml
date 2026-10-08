@@ -3,12 +3,55 @@
 
 registry:
   active_model: "SafetyVision-YOLO26"
-  active_version: "2.1.0"
+  active_version: "3.0.0"
 
 models:
   - model_name: "SafetyVision-YOLO26"
-    model_version: "2.1.0"
+    model_version: "3.0.0"
     status: "production_candidate"
+    architecture: "YOLO11n"
+    framework: "Ultralytics YOLO 8.4"
+    weights_path: "models/safetyvision_yolo26n.pt"
+    onnx_path: "models/safetyvision_yolo26n.onnx"
+    training_date: "2026-10-08"
+    dataset_version: "v3.0.0-real-79 (63 train / 16 held-out real workshop photos) + 150 synthetic"
+    classes:
+      - "grinder"
+      - "guard"
+      - "handle"
+      - "cable"
+      - "switch"
+      - "damaged_guard"
+      - "damaged_cable"
+      - "person"
+      - "drill"
+    metrics:
+      # Held-out REAL photos only (16 images, 42 instances), imgsz 640
+      mAP50: 0.725
+      mAP50_95: 0.349
+      precision: 0.759
+      mean_recall: 0.733
+      tool_identification_accuracy: 1.000   # 16/16 photos: correct tool type (grinder vs drill)
+      grinder_mAP50: 0.986
+      drill_mAP50: 0.995
+      guard_recall: 0.667
+      handle_recall: 0.762
+      cable_recall: 0.367
+      switch_recall: 0.600
+      previous_model_tool_identification: 0.0625   # v2.1.0 identified 1/16 of the same photos
+    training_parameters:
+      base_weights: "yolo11n.pt"
+      epochs: 27   # best checkpoint of a 35-epoch run
+      imgsz: 640
+      batch_size: 16
+      optimizer: "auto (AdamW)"
+      device: "cpu"
+      real_image_oversampling: 4
+    notes: "Trained on 63 labelled real workshop photos (angle grinders and power drills) plus 150 synthetic images. Reliably identifies the tool type on real photos. Small parts (power cord, switch) are still often missed, which can produce a FAIL for a part that is present; more labelled real photos are the fix."
+
+  - model_name: "SafetyVision-YOLO26"
+    model_version: "2.1.0"
+    status: "superseded"
     architecture: "YOLO11n"
     framework: "Ultralytics YOLO 8.4"
     weights_path: "models/safetyvision_yolo26n.pt"

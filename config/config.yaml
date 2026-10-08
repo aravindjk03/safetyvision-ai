@@ -16,7 +16,7 @@ model:
   demo_weights_path: "yolo11n.pt"
   # Device selection: 'auto', 'cuda', 'cpu'
   device: "auto"
-  imgsz: 320
+  imgsz: 640
   half_precision: false
   onnx_export_path: "models/safetyvision_yolo26n.onnx"
 
