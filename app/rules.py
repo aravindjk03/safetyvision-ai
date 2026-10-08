@@ -92,14 +92,40 @@ class SafetyRuleEngine:
         """
         if not self.auto_select:
             eq_class = self.rules.get("equipment_class", "grinder")
-            return self.rules, [d for d in detections if d.class_name == eq_class]
+            return self.rules, self._distinct_equipment([d for d in detections if d.class_name == eq_class])
 
         eq_classes = self._equipment_classes()
-        candidates = [d for d in detections if d.class_name in eq_classes]
+        candidates = self._distinct_equipment([d for d in detections if d.class_name in eq_classes])
         if not candidates:
             return self.rules, []
-        best = max(candidates, key=lambda d: d.confidence)
-        return self.config.get_equipment_rules(eq_classes[best.class_name]), candidates
+        return self.config.get_equipment_rules(eq_classes[candidates[0].class_name]), candidates
+
+    def _distinct_equipment(self, candidates: List[Detection]) -> List[Detection]:
+        """
+        Collapses equipment detections that describe the same physical object (overlapping boxes,
+        possibly with different equipment classes) and drops secondary objects below the review
+        confidence band. Returned list is ordered by confidence, primary equipment first.
+        """
+        med_thresh = self.config.medium_confidence_threshold
+        kept: List[Detection] = []
+        for d in sorted(candidates, key=lambda d: d.confidence, reverse=True):
+            if kept and d.confidence < med_thresh:
+                continue
+            if any(self._same_object(d.bbox, k.bbox) for k in kept):
+                continue
+            kept.append(d)
+        return kept
+
+    @staticmethod
+    def _same_object(a: List[float], b: List[float], iou_thresh: float = 0.45, contain_thresh: float = 0.7) -> bool:
+        ix1, iy1, ix2, iy2 = max(a[0], b[0]), max(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3])
+        inter = max(0.0, ix2 - ix1) * max(0.0, iy2 - iy1)
+        area_a = max(0.0, a[2] - a[0]) * max(0.0, a[3] - a[1])
+        area_b = max(0.0, b[2] - b[0]) * max(0.0, b[3] - b[1])
+        if inter <= 0 or min(area_a, area_b) <= 0:
+            return False
+        iou = inter / (area_a + area_b - inter)
+        return iou >= iou_thresh or inter / min(area_a, area_b) >= contain_thresh
 
     def evaluate(self, detections: List[Detection]) -> RuleEvaluationResult:
         """
@@ -160,7 +186,7 @@ class SafetyRuleEngine:
                 recommended_action="Isolate target equipment in camera frame so only one unit is inspected at a time.",
             )
 
-        # Primary equipment object selected
+        # Primary equipment object selected (highest confidence first)
         primary_eq = equipment_detections[0]
         eq_box = primary_eq.bbox
 

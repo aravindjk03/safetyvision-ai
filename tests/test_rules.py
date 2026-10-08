@@ -212,3 +212,27 @@ def test_auto_no_equipment_review():
     res = engine.evaluate([make_det("cable", 0.9, [70, 290, 190, 330], cid=3)])
     assert res.overall_status == "REVIEW"
     assert res.equipment_detected is False
+
+
+def test_duplicate_boxes_on_same_tool_are_merged():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([
+        make_det("grinder", 0.91, [360, 30, 1010, 395]),
+        make_det("grinder", 0.90, [360, 180, 1010, 395]),
+        make_det("drill", 0.55, [380, 40, 1000, 390], cid=8),
+    ])
+    assert "Multiple" not in res.reason
+    assert res.equipment == "grinder"
+
+
+def test_low_confidence_second_tool_is_ignored():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([
+        make_det("drill", 0.88, [380, 0, 920, 210], cid=8),
+        make_det("cable", 0.90, [300, 150, 450, 260], cid=3),
+        make_det("grinder", 0.45, [0, 250, 500, 550]),
+    ])
+    assert res.equipment == "drill"
+    assert res.overall_status == "PASS"
