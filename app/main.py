@@ -436,7 +436,10 @@ if menu == "Single Inspection":
     with col_meta:
         with st.container(border=True):
             st.markdown("##### Inspection Parameters")
-            st.selectbox("Target Equipment", ["Angle Grinder"], index=0)
+            st.selectbox(
+                "Target Equipment", ["Auto-detect (Angle Grinder / Power Drill)"], index=0,
+                help="The model identifies the tool type and applies that tool's safety rules.",
+            )
             operator_name = st.text_input("Operator / Inspector ID", value="Tech-104")
             inspection_notes = st.text_input("Audit Notes / Station", value="Workstation Bench #3")
             conf_override = st.slider(
@@ -669,22 +672,29 @@ elif menu == "Safety Rules & Config":
 
     eq_rules = cfg.get_equipment_rules("angle_grinder")
 
-    st.markdown(f"**Equipment:** {eq_rules.get('display_name', 'Angle Grinder')} · **Applicable standards:** {eq_rules.get('standard_reference', 'OSHA 1910.243 / ANSI B7.1')}")
+    st.caption("The model identifies the tool in each photo and applies the matching rule set. Only one tool should be in frame per inspection.")
 
-    rules_rows = [
-        ("Chassis Verification", "—", "Angle grinder body must be detected as the target equipment."),
-        ("Guard Protection", "CRITICAL", "Abrasive wheel guard must be detected and spatially attached."),
-        ("Two-Hand Control", "HIGH", "Auxiliary side handle must be detected and attached."),
-        ("Electrical Cord", "HIGH", "Power cable and strain relief must be detected without damage."),
-        ("Control Switch", "MEDIUM", "Operating dead-man trigger / switch must be detected."),
-        ("Damage Prevention", "CRITICAL", "Any detected damage to guard or cable triggers an immediate FAIL."),
-    ]
-    st.markdown("##### Configured Safety Rules")
-    st.dataframe(
-        pd.DataFrame(rules_rows, columns=["Rule", "Severity", "Requirement"]),
-        width="stretch",
-        hide_index=True,
-    )
+    grinder_tab, drill_tab = st.tabs(["Angle Grinder", "Power Drill"])
+    with grinder_tab:
+        st.markdown(f"**Equipment:** {eq_rules.get('display_name', 'Angle Grinder')} · **Applicable standards:** {eq_rules.get('standard_reference', 'OSHA 1910.243 / ANSI B7.1')}")
+        rules_rows = [
+            ("Chassis Verification", "—", "Angle grinder body must be detected as the target equipment."),
+            ("Guard Protection", "CRITICAL", "Abrasive wheel guard must be detected and spatially attached."),
+            ("Two-Hand Control", "HIGH", "Auxiliary side handle must be detected and attached."),
+            ("Electrical Cord", "HIGH", "Power cable and strain relief must be detected without damage."),
+            ("Control Switch", "MEDIUM", "Operating dead-man trigger / switch must be detected."),
+            ("Damage Prevention", "CRITICAL", "Any detected damage to guard or cable triggers an immediate FAIL."),
+        ]
+        st.dataframe(pd.DataFrame(rules_rows, columns=["Rule", "Severity", "Requirement"]), width="stretch", hide_index=True)
+    with drill_tab:
+        drill_rules = cfg.get_equipment_rules("power_drill")
+        st.markdown(f"**Equipment:** {drill_rules.get('display_name', 'Power Drill')} · **Applicable standards:** {drill_rules.get('standard_reference', 'OSHA 1910.243')}")
+        drill_rows = [
+            ("Chassis Verification", "—", "Drill body must be detected as the target equipment."),
+            ("Electrical Cord", "HIGH", "Power cable and strain relief must be detected without damage."),
+            ("Damage Prevention", "CRITICAL", "Any detected cable damage triggers an immediate FAIL."),
+        ]
+        st.dataframe(pd.DataFrame(drill_rows, columns=["Rule", "Severity", "Requirement"]), width="stretch", hide_index=True)
 
     conf_rules = eq_rules.get("confidence", {})
     spatial_rules = eq_rules.get("spatial", {})

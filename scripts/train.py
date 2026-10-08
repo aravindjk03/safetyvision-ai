@@ -25,6 +25,7 @@ from app.logger import get_logger
 
 def parse_args():
     parser = argparse.ArgumentParser(description="SafetyVision AI — Model Training")
+    parser.add_argument("--data", type=str, default="dataset/data.yaml", help="Dataset YAML (relative to project root or absolute)")
     parser.add_argument("--model", type=str, default="yolo11n.pt", help="Base model weights or architecture (yolo11n.pt, yolo26n)")
     parser.add_argument("--epochs", type=int, default=30, help="Number of training epochs")
     parser.add_argument("--imgsz", type=int, default=640, help="Image size for training")
@@ -59,7 +60,7 @@ def run_training():
     logger = get_logger()
     cfg = get_config(ROOT_DIR)
 
-    dataset_yaml = ROOT_DIR / "dataset" / "data.yaml"
+    dataset_yaml = ROOT_DIR / args.data
     if not dataset_yaml.exists():
         raise FileNotFoundError(f"Dataset configuration not found at {dataset_yaml}. Run scripts/generate_sample_data.py first.")
 

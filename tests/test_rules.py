@@ -156,3 +156,59 @@ def test_rule_spatial_rejection():
     # The guard is not associated with the grinder, so it counts as missing!
     assert res.overall_status == "FAIL"
     assert "guard" in res.missing_components
+
+
+def test_auto_selects_grinder_rules():
+    engine = SafetyRuleEngine()
+
+    detections = [
+        make_det("grinder", 0.95, [180, 240, 480, 390]),
+        make_det("guard", 0.94, [440, 220, 560, 400]),
+        make_det("handle", 0.92, [390, 120, 450, 240]),
+        make_det("cable", 0.91, [70, 290, 190, 330]),
+        make_det("switch", 0.89, [250, 230, 300, 250]),
+    ]
+
+    res = engine.evaluate(detections)
+    assert res.equipment == "grinder"
+    assert res.overall_status == "PASS"
+
+
+def test_auto_selects_drill_rules():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([
+        make_det("drill", 0.93, [200, 200, 460, 400], cid=8),
+        make_det("cable", 0.90, [430, 330, 560, 420], cid=3),
+    ])
+    assert res.equipment == "drill"
+    assert res.equipment_display_name == "Electric Power Drill"
+    assert res.overall_status == "PASS"
+
+
+def test_auto_drill_missing_cable_fails():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([make_det("drill", 0.93, [200, 200, 460, 400], cid=8)])
+    assert res.equipment == "drill"
+    assert res.overall_status == "FAIL"
+    assert res.missing_components == ["cable"]
+
+
+def test_auto_grinder_and_drill_requires_review():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([
+        make_det("grinder", 0.95, [180, 240, 480, 390]),
+        make_det("drill", 0.90, [600, 200, 800, 400], cid=8),
+    ])
+    assert res.overall_status == "REVIEW"
+    assert "Multiple" in res.reason
+
+
+def test_auto_no_equipment_review():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([make_det("cable", 0.9, [70, 290, 190, 330], cid=3)])
+    assert res.overall_status == "REVIEW"
+    assert res.equipment_detected is False

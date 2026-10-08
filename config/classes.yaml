@@ -75,3 +75,12 @@ classes:
     color_rgb: [128, 128, 128]
     description: "Human operator or bystander in visual frame"
     is_equipment: false
+
+  8:
+    name: "drill"
+    display_name: "Power Drill Body"
+    category: "equipment"
+    color_bgr: [0, 200, 255]      # Amber
+    color_rgb: [255, 200, 0]
+    description: "Main body of a handheld electric drill or hammer drill"
+    is_equipment: true

@@ -62,14 +62,44 @@ class RuleEvaluationResult:
 class SafetyRuleEngine:
     """Evaluates detections against configurable industrial safety rules."""
 
-    def __init__(self, equipment_key: str = "angle_grinder"):
+    AUTO = "auto"
+    DEFAULT_EQUIPMENT = "angle_grinder"
+
+    def __init__(self, equipment_key: str = AUTO):
         self.logger = get_logger()
         self.config = get_config()
         self.equipment_key = equipment_key
-        self.rules = self.config.get_equipment_rules(equipment_key)
-        
+        self.auto_select = equipment_key == self.AUTO
+        self.rules = self.config.get_equipment_rules(self.DEFAULT_EQUIPMENT if self.auto_select else equipment_key)
+
         if not self.rules:
             self.logger.warning(f"No rules found for equipment '{equipment_key}', using defaults.")
+
+    def _equipment_classes(self) -> Dict[str, str]:
+        """Maps each configured equipment detection class to its rules key."""
+        mapping = {}
+        for key in self.config.get_all_equipment_keys():
+            eq_class = self.config.get_equipment_rules(key).get("equipment_class")
+            if eq_class:
+                mapping[eq_class] = key
+        return mapping
+
+    def _select_rules(self, detections: List[Detection]) -> Tuple[Dict[str, Any], List[Detection]]:
+        """
+        Returns the rule set to apply and the equipment detections it is judged on.
+        In auto mode the most confident detected equipment type decides which rules apply, and every
+        configured equipment type counts towards the one-item-per-inspection check.
+        """
+        if not self.auto_select:
+            eq_class = self.rules.get("equipment_class", "grinder")
+            return self.rules, [d for d in detections if d.class_name == eq_class]
+
+        eq_classes = self._equipment_classes()
+        candidates = [d for d in detections if d.class_name in eq_classes]
+        if not candidates:
+            return self.rules, []
+        best = max(candidates, key=lambda d: d.confidence)
+        return self.config.get_equipment_rules(eq_classes[best.class_name]), candidates
 
     def evaluate(self, detections: List[Detection]) -> RuleEvaluationResult:
         """
@@ -80,18 +110,18 @@ class SafetyRuleEngine:
         Step 3: Component spatial association & confidence assessment.
         Step 4: Final status aggregation & recommendation synthesis.
         """
-        eq_class = self.rules.get("equipment_class", "grinder")
-        eq_display = self.rules.get("display_name", "Angle Grinder")
-        mandatory_components = self.rules.get("mandatory_components", ["guard", "handle", "cable", "switch"])
-        severities = self.rules.get("component_severities", {})
-        spatial_cfg = self.rules.get("spatial", {})
-        damage_specs = self.rules.get("damage_violations", {})
+        rules, equipment_detections = self._select_rules(detections)
+        eq_class = rules.get("equipment_class", "grinder")
+        eq_display = rules.get("display_name", "Angle Grinder")
+        mandatory_components = rules.get("mandatory_components", ["guard", "handle", "cable", "switch"])
+        severities = rules.get("component_severities", {})
+        spatial_cfg = rules.get("spatial", {})
+        damage_specs = rules.get("damage_violations", {})
 
         high_thresh = self.config.high_confidence_threshold
         med_thresh = self.config.medium_confidence_threshold
 
         # Step 1: Detect equipment instance(s)
-        equipment_detections = [d for d in detections if d.class_name == eq_class]
 
         # Case 1A: No equipment detected
         if len(equipment_detections) == 0:
@@ -103,7 +133,11 @@ class SafetyRuleEngine:
                 equipment_bbox=None,
                 overall_status="REVIEW",
                 highest_severity="MEDIUM",
-                findings=["Target equipment chassis was not detected in the image."],
+                findings=[
+                    "Target equipment chassis was not detected in the image."
+                    if not self.auto_select
+                    else "No supported equipment (angle grinder or power drill) was detected in the image."
+                ],
                 warnings=["Insufficient visual evidence or equipment absent."],
                 reason="REVIEW — Target equipment could not be identified with adequate confidence.",
                 recommended_action="Re-align camera framing, verify lighting, and ensure equipment is fully in view.",
@@ -189,7 +223,7 @@ class SafetyRuleEngine:
             if not associated_candidates:
                 # Component is missing or not attached
                 missing_components.append(comp_name)
-                comp_desc = self.rules.get("component_descriptions", {}).get(
+                comp_desc = rules.get("component_descriptions", {}).get(
                     comp_name, f"Mandatory {comp_name} was not detected."
                 )
                 findings.append(f"CRITICAL FINDING: {comp_desc}")
