@@ -156,3 +156,83 @@ def test_rule_spatial_rejection():
     # The guard is not associated with the grinder, so it counts as missing!
     assert res.overall_status == "FAIL"
     assert "guard" in res.missing_components
+
+
+def test_auto_selects_grinder_rules():
+    engine = SafetyRuleEngine()
+
+    detections = [
+        make_det("grinder", 0.95, [180, 240, 480, 390]),
+        make_det("guard", 0.94, [440, 220, 560, 400]),
+        make_det("handle", 0.92, [390, 120, 450, 240]),
+        make_det("cable", 0.91, [70, 290, 190, 330]),
+        make_det("switch", 0.89, [250, 230, 300, 250]),
+    ]
+
+    res = engine.evaluate(detections)
+    assert res.equipment == "grinder"
+    assert res.overall_status == "PASS"
+
+
+def test_auto_selects_drill_rules():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([
+        make_det("drill", 0.93, [200, 200, 460, 400], cid=8),
+        make_det("cable", 0.90, [430, 330, 560, 420], cid=3),
+    ])
+    assert res.equipment == "drill"
+    assert res.equipment_display_name == "Electric Power Drill"
+    assert res.overall_status == "PASS"
+
+
+def test_auto_drill_missing_cable_fails():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([make_det("drill", 0.93, [200, 200, 460, 400], cid=8)])
+    assert res.equipment == "drill"
+    assert res.overall_status == "FAIL"
+    assert res.missing_components == ["cable"]
+
+
+def test_auto_grinder_and_drill_requires_review():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([
+        make_det("grinder", 0.95, [180, 240, 480, 390]),
+        make_det("drill", 0.90, [600, 200, 800, 400], cid=8),
+    ])
+    assert res.overall_status == "REVIEW"
+    assert "Multiple" in res.reason
+
+
+def test_auto_no_equipment_review():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([make_det("cable", 0.9, [70, 290, 190, 330], cid=3)])
+    assert res.overall_status == "REVIEW"
+    assert res.equipment_detected is False
+
+
+def test_duplicate_boxes_on_same_tool_are_merged():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([
+        make_det("grinder", 0.91, [360, 30, 1010, 395]),
+        make_det("grinder", 0.90, [360, 180, 1010, 395]),
+        make_det("drill", 0.55, [380, 40, 1000, 390], cid=8),
+    ])
+    assert "Multiple" not in res.reason
+    assert res.equipment == "grinder"
+
+
+def test_low_confidence_second_tool_is_ignored():
+    engine = SafetyRuleEngine()
+
+    res = engine.evaluate([
+        make_det("drill", 0.88, [380, 0, 920, 210], cid=8),
+        make_det("cable", 0.90, [300, 150, 450, 260], cid=3),
+        make_det("grinder", 0.45, [0, 250, 500, 550]),
+    ])
+    assert res.equipment == "drill"
+    assert res.overall_status == "PASS"

@@ -47,8 +47,8 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
-        "app_name": cfg.system_config.get("app_name", "SafetyVision AI"),
-        "version": cfg.system_config.get("version", "0.1.0"),
+        "app_name": cfg.app_name,
+        "version": cfg.system_info.get("version", "0.1.0"),
         "model": {
             "name": detector.model_name,
             "version": detector.model_version,

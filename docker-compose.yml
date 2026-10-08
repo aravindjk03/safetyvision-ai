@@ -1,0 +1,35 @@
+# SafetyVision AI — dashboard (port 8501) + REST API (port 8080) sharing one audit database
+services:
+  dashboard:
+    build: .
+    image: safetyvision-ai:latest
+    ports:
+      - "8501:8501"
+    volumes:
+      - sv-data:/app/data
+      - sv-evidence:/app/evidence
+      - sv-reports:/app/reports
+    restart: unless-stopped
+
+  api:
+    image: safetyvision-ai:latest
+    depends_on:
+      - dashboard
+    command: ["python", "-m", "uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8080"]
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+    volumes:
+      - sv-data:/app/data
+      - sv-evidence:/app/evidence
+      - sv-reports:/app/reports
+    restart: unless-stopped
+
+volumes:
+  sv-data:
+  sv-evidence:
+  sv-reports:

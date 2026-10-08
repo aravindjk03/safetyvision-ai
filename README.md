@@ -64,8 +64,9 @@ TAMPER-EVIDENT EVIDENCE IMAGE + SQLITE AUDIT RECORD + REPORTLAB PDF REPORT
 
 ### Windows (PowerShell)
 ```powershell
-# 1. Navigate to repository root
-cd C:\Users\Admin\.gemini\antigravity\scratch\safetyvision-ai
+# 1. Clone and enter the repository
+git clone https://github.com/aravindjk03/safetyvision-ai.git
+cd safetyvision-ai
 
 # 2. Create and activate Python virtual environment
 python -m venv venv
@@ -75,32 +76,34 @@ python -m venv venv
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-# 4. Generate sample acceptance dataset
-python scripts/generate_sample_data.py
-
-# 5. Run automated test suite
+# 4. Run automated test suite
 pytest -v
 
-# 6. Launch Streamlit Industrial Dashboard
+# 5. Launch Streamlit Industrial Dashboard (or double-click run.bat)
 streamlit run app/main.py
 ```
+
+The repository already ships the sample dataset and trained weights. Re-generate the synthetic dataset only if you want fresh samples: `python scripts/generate_sample_data.py`.
 
 ### Linux (Ubuntu / Debian)
 ```bash
 # 1. Install system multimedia libraries
-sudo apt update && sudo apt install -y python3-pip python3-venv libgl1-mesa-glx libglib2.0-0
+sudo apt update && sudo apt install -y python3-pip python3-venv libgl1 libglib2.0-0
 
 # 2. Setup virtual environment
 python3 -m venv venv
 source venv/bin/activate
 
-# 3. Install dependencies
+# 3. Install dependencies (CPU-only PyTorch first keeps the install small)
 pip install --upgrade pip
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 
-# 4. Run tests & start dashboard
+# 4. Run tests & start dashboard / API
 pytest -v
-streamlit run app/main.py --server.port 8501 --server.address 0.0.0.0
+./run.sh            # dashboard → http://localhost:8501
+./run.sh api        # REST API  → http://localhost:8080/docs
+./run.sh all        # both
 ```
 
 ---
@@ -112,7 +115,7 @@ streamlit run app/main.py --server.port 8501 --server.address 0.0.0.0
    - Prominently watermarked: **`"DEMO MODEL — NOT TRAINED FOR INDUSTRIAL SAFETY INSPECTION"`**.
 2. **Custom Model Mode**:
    - Once trained weights exist at `models/safetyvision_yolo26n.pt`, the system automatically transitions:
-   - Displays: **`MODEL: SafetyVision-YOLO26 | VERSION: 0.1.0 | MODE: CUSTOM SAFETY MODEL`**.
+   - Displays: **`MODEL: SafetyVision-YOLO26 | VERSION: 3.0.0 | MODE: CUSTOM SAFETY MODEL`**.
 
 ---
 
@@ -123,14 +126,27 @@ streamlit run app/main.py --server.port 8501 --server.address 0.0.0.0
 python scripts/validate_dataset.py
 
 # 2. Train custom YOLO model (auto-detects CUDA GPU or gracefully falls back to CPU)
-python scripts/train.py --epochs 30 --batch 16 --imgsz 640
+python scripts/train.py --epochs 35 --batch 16 --imgsz 640
 
 # 3. Run model evaluation audit (generates reports/model_evaluation.json & .html)
-python scripts/evaluate.py --split test
+python scripts/evaluate.py --split test --imgsz 640
 
 # 4. Run model latency and throughput benchmark
 python scripts/benchmark_models.py
 ```
+
+**Current model (v3.0.0, see `models/model_registry.yaml`)** was trained on 63 labelled real workshop photos of angle grinders and power drills, plus 150 synthetic images. It was then tested on 16 real photos it had never seen:
+
+| Measure (16 held-out real photos) | v2.1.0 (synthetic only) | v3.0.0 |
+|---|---|---|
+| Tool correctly identified (grinder / drill) | 1 of 16 | **16 of 16** |
+| Detection mAP50 (all classes) | n/a | 0.725 |
+| Grinder / drill mAP50 | n/a | 0.986 / 0.995 |
+| Recall: guard / handle / cable / switch | n/a | 0.67 / 0.76 / 0.37 / 0.60 |
+
+Tool identification on real photos is now reliable. Small parts, especially the power cord and switch, are still often missed, so a photo can FAIL for a part that is actually present. Adding more labelled real photos is the way to improve this; see `docs/DATA_COLLECTION_GUIDE.md`.
+
+The app chooses the safety rules automatically from the detected tool. **Angle grinders** need the wheel guard, side handle, cable and switch. **Power drills** need the cable. A damaged guard or cable is always a critical FAIL.
 
 ---
 
@@ -202,9 +218,9 @@ safetyvision-ai/
 
 Start the headless FastAPI microservice:
 ```bash
-python -m uvicorn app.api:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.api:app --host 0.0.0.0 --port 8080
 ```
-- Interactive Swagger UI: `http://localhost:8000/docs`
+- Interactive Swagger UI: `http://localhost:8080/docs`
 - Health check: `GET /health`
 - Run image inspection: `POST /inspect/image`
 - Query inspection record: `GET /inspection/{id}`
@@ -214,7 +230,40 @@ python -m uvicorn app.api:app --host 0.0.0.0 --port 8000
 
 ---
 
-## 8. Licensing
+Example request:
+```bash
+curl -F "file=@dataset/images/test/acceptance_01_pass_full.jpg;type=image/jpeg" \
+     "http://localhost:8080/inspect/image?operator=Line-3"
+```
+
+---
+
+## 8. Running Live (Deployment)
+
+### Docker (dashboard + API)
+```bash
+docker compose up --build
+# Dashboard: http://localhost:8501   API: http://localhost:8080/docs
+```
+Both services share named volumes for the SQLite audit database, evidence images and PDF reports. The image uses CPU-only PyTorch.
+
+### Single container on a hosting platform (Render, Railway, Cloud Run, Hugging Face Docker Spaces)
+Point the platform at the `Dockerfile`. The container serves the dashboard on `$PORT` (default `8501`). To run the API instead, override the start command with
+`python -m uvicorn app.api:app --host 0.0.0.0 --port $PORT`.
+
+### Streamlit Community Cloud (free, recommended for a public demo)
+1. Open the one-click deploy link: <https://share.streamlit.io/deploy?repository=aravindjk03/safetyvision-ai&branch=main&mainModule=app/main.py>
+2. Sign in with GitHub and authorize Streamlit.
+3. Under **Advanced settings**, choose Python **3.11**, then click **Deploy**.
+
+The first build takes about 5 to 10 minutes. `requirements.txt` pulls CPU-only PyTorch, `packages.txt` installs the OpenCV system libraries, and `.streamlit/config.toml` provides the theme. You get a public `https://<name>.streamlit.app` URL.
+
+> [!NOTE]
+> Free hosting tiers have no persistent disk: the inspection history, evidence and reports reset on every restart. Mount a volume (Docker/Render) for a durable audit trail. The **Live Camera** page uses the browser's camera, so it requires the dashboard to be served over HTTPS (or `localhost`).
+
+---
+
+## 9. Licensing
 
 SafetyVision AI prototype integrates Ultralytics YOLO.
 - **Open Source Evaluation**: Licensed under GNU AGPL-3.0.

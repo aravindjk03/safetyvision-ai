@@ -268,6 +268,13 @@ class DatabaseManager:
             cursor.execute(query, params)
             return [dict(r) for r in cursor.fetchall()]
 
+    def get_equipment_types(self) -> List[str]:
+        """Returns the distinct equipment types present in the inspection history."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT DISTINCT equipment_type FROM inspections ORDER BY equipment_type;")
+            return [r[0] for r in cursor.fetchall() if r[0]]
+
     def get_statistics(self) -> Dict[str, Any]:
         """Calculates total counts, pass/fail/review rates, and operational metrics."""
         with self.get_connection() as conn:

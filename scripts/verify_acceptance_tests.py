@@ -10,6 +10,7 @@ Validates the 5 mandatory acceptance criteria specified in Section 49:
 
 from pathlib import Path
 import sys
+import tempfile
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
@@ -95,7 +96,8 @@ class AcceptanceDetector:
 
 def run_acceptance_tests():
     cfg = get_config(ROOT_DIR)
-    db = DatabaseManager()
+    # Isolated database so mock acceptance records never pollute the production audit trail
+    db = DatabaseManager(db_path=Path(tempfile.mkdtemp(prefix="sv_acceptance_")) / "acceptance.db")
     detector = AcceptanceDetector()
     engine = InspectionEngine(detector=detector, db_manager=db)
 

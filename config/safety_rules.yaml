@@ -65,3 +65,37 @@ equipment:
       no_equipment_policy: "REVIEW"         # If 0 grinder in scene, flag as review
       missing_mandatory_policy: "FAIL"      # If mandatory component missing, FAIL
       low_confidence_policy: "REVIEW"       # If mandatory component confidence between medium and high, REVIEW
+
+  power_drill:
+    display_name: "Electric Power Drill"
+    equipment_class: "drill"
+    category: "power_tools"
+    standard_reference: "OSHA 1910.243 / IS 302-2-1"
+
+    # Visible requirements for a corded drill
+    mandatory_components:
+      - cable
+
+    critical_components: []
+
+    component_severities:
+      cable: "HIGH"
+
+    component_descriptions:
+      cable: "Power cord / strain relief is missing or obscured."
+
+    damage_violations:
+      damaged_cable:
+        severity: "CRITICAL"
+        reason: "Power cable exhibits visible insulation tear, fraying, or exposed conductors."
+        recommended_action: "De-energize immediately. Lockout tool and route to certified electrician."
+
+    spatial:
+      max_center_distance_factor: 1.25
+      expansion_box_factor: 1.40
+      min_containment_overlap: 0.01
+
+    confidence:
+      high_threshold: 0.85
+      medium_threshold: 0.60
+      low_cutoff: 0.25

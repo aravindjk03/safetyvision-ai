@@ -38,7 +38,7 @@ def test_image_validation_errors():
         engine.inspect(np.array([]))
 
 
-def test_end_to_end_inspection_mock():
+def test_end_to_end_inspection_mock(tmp_path):
     # Construct complete passing grinder detections
     mock_detections = [
         Detection(0, "grinder", 0.95, [180, 240, 480, 390], [330, 315], 300, 150, 45000),
@@ -49,7 +49,7 @@ def test_end_to_end_inspection_mock():
     ]
 
     detector = MockDetector(mock_detections)
-    db = DatabaseManager()
+    db = DatabaseManager(db_path=tmp_path / "test.db")
     engine = InspectionEngine(detector=detector, db_manager=db)
 
     # Create dummy 640x640 frame

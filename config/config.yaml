@@ -3,7 +3,7 @@
 system:
   app_name: "SafetyVision AI"
   app_subtitle: "Industrial Visual Safety Inspection Platform"
-  version: "0.1.0"
+  version: "0.2.0"
   environment: "development"
   debug: false
 
@@ -16,7 +16,7 @@ model:
   demo_weights_path: "yolo11n.pt"
   # Device selection: 'auto', 'cuda', 'cpu'
   device: "auto"
-  imgsz: 320
+  imgsz: 640
   half_precision: false
   onnx_export_path: "models/safetyvision_yolo26n.onnx"
 
@@ -57,7 +57,7 @@ api:
   host: "0.0.0.0"
   port: 8080
   title: "SafetyVision AI Inspection API"
-  version: "0.1.0"
+  version: "0.2.0"
 
 logging:
   level: "INFO"
